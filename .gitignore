@@ -1,0 +1,64 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.o
+*.obj
+*.pyc
+*.pyo
+
+# Unit test / coverage reports
+.pytest_cache/
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Environment variables
+.env
+*.env
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+*.sqlite3
+*.db
+
+# Logs
+logs/
+*.log
+*.out
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# Editors
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Ruff cache
+.ruff_cache/
+
+# Temporary files
+.temp/
+.tmp/
+
+# ignores some local test files
+*sse/
