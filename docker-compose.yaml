@@ -4,20 +4,30 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile_api
+    environment:
+      - MCP_INDIA_KANOON_URL=${MCP_INDIA_KANOON_URL}
+      - OPEN_AI_KEY=${OPEN_AI_KEY}
+      - OPEN_AI_URL=${OPEN_AI_URL}
+      - OPEN_AI_MODEL=${OPEN_AI_MODEL}
     networks:
       - paralegal-ai-bot-network 
     ports:
       - "8001:8001"
+    depends_on:
+      - mcp_india_kanoon
   
   mcp_india_kanoon:
     hostname: mcp_india_kanoon
     build: 
       context: .
       dockerfile: Dockerfile_mcp
+    environment:
+      - API_URL=${API_URL}
+      - API_KEY=${API_KEY}
     networks:
       - paralegal-ai-bot-network
     ports:
-      - "8000"
+      - "8000:8000"
 
 networks:
   paralegal-ai-bot-network:

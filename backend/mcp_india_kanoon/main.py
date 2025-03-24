@@ -31,7 +31,11 @@ async def lifespan(app: FastAPI):
     logging.info("Stopping India kanoon MCP!")
 
 
-client = FastAPI(title="mcp_india_kanoon", lifespan=lifespan)
+client = FastAPI(
+    title="mcp_india_kanoon",
+    lifespan=lifespan,
+    # include_in_schema=False,
+)
 
 
 @client.get("/list-tools", status_code=status.HTTP_200_OK)

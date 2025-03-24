@@ -62,3 +62,4 @@ logs/
 
 # ignores some local test files
 *sse/
+ikapi.py

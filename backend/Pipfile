@@ -7,9 +7,9 @@ name = "pypi"
 fastapi = "*"
 uvicorn = "*"
 mcp = "*"
-starlette = "*"
-sseclient = "*"
 httpx = "*"
+openai = "*"
+dotenv = "*"
 
 [dev-packages]
 

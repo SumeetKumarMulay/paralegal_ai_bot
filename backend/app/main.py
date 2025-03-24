@@ -3,7 +3,7 @@
 from contextlib import asynccontextmanager
 import logging
 from fastapi import FastAPI
-import httpx
+from services.ai_agents.ai_agents import AIAgents
 import uvicorn
 
 
@@ -14,16 +14,20 @@ async def lifespan(app: FastAPI):
     logging.info("Stopping backend")
 
 
-app = FastAPI(lifespan=lifespan, title="Paralegal AI", version="0.0.1")
+app = FastAPI(
+    lifespan=lifespan,
+    title="Paralegal AI",
+    version="0.0.1",
+)
 
 
-@app.get("/")
-async def test():
-    async with httpx.AsyncClient() as client:
-        result = await client.get(
-            "http://mcp_india_kanoon:8000/list-resources",
-        )
-        return result.json()
+@app.post("/")
+async def test(query: str):
+    agents = AIAgents()
+    result = await agents.process_query(
+        query=query,
+    )
+    return result
 
 
 if __name__ == "__main__":

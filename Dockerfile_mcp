@@ -6,6 +6,8 @@ WORKDIR /mcp_india_kanoon
 
 COPY ./backend/Pipfile /mcp_india_kanoon/Pipfile
 
+COPY ./.env /mcp_india_kanoon/.env
+
 RUN python -m pip install --upgrade pip
 
 COPY ./backend/mcp_india_kanoon /mcp_india_kanoon
