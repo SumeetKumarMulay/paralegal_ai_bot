@@ -42,19 +42,23 @@ class MCPIndiaKanoonService:
                     "name": name,
                 },
                 data=json.dumps(arguments),
-                timeout=3000
+                timeout=3000,
             )
             try:
                 result.raise_for_status()
-                return result.json()
+                result = [
+                    TextContent(type=v["type"], text=v["text"])
+                    for v in result.json()["content"]
+                ]
+                return result
             except httpx.HTTPStatusError as e:
                 logging.error(
-                    f"{MCPIndiaKanoonService.__name__} error:: {e}",
+                    f"{MCPIndiaKanoonService.__name__} status error:: {e}",
                 )
                 return None
             except httpx.RequestError as e:
                 logging.error(
-                    f"{MCPIndiaKanoonService.__name__} error :: {e}",
+                    f"{MCPIndiaKanoonService.__name__} request error :: {e}",
                 )
                 return None
             finally:

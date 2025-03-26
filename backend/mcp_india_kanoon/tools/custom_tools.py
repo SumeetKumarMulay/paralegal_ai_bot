@@ -2,6 +2,8 @@ import json
 from mcp.types import Tool, TextContent
 from enum import Enum
 from config import Config
+from utilities.Ikapi_model import IKapiModel
+from utilities.Ikapi_docs_model import IkapiDocModel
 import urllib.parse
 import httpx
 import logging
@@ -22,6 +24,9 @@ class CustomTools:
             description="""
             Search indian law, court judgments and the constitution.
 
+            The return result is in the form of json string and should be
+            converted back to object before being read.
+
             1. min_page starts from 0.
             2. max_page ends at 100.
             max_page and min_page are whole numbers i.e they cannot be floats.
@@ -30,7 +35,7 @@ class CustomTools:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "query": {"type": "str"},
+                    "query": {"type": "string"},
                     "min_pages": {"type": "number"},
                     "max_pages": {"type": "number"},
                 },
@@ -46,8 +51,8 @@ class CustomTools:
             This tool can be used to fetch specific documents from the
             database.
 
-            document id can be called docid or tid. It is a whole number
-            greater then 0 and whole numbers.
+            To call specific documents first extract docid from the search_database
+            result then pass that docid into this tool.
             """,
             inputSchema={
                 "type": "object",
@@ -99,12 +104,17 @@ class CustomToolCalls:
             )
             try:
                 result.raise_for_status()
-                return [
-                    TextContent(
-                        type="text",
-                        text=json.dumps(result.json()["docs"]),
-                    )
+                result = IKapiModel.model_validate(result.json())
+                result = [
+                    {
+                        "docid": result.docs[i].tid,
+                        "title": result.docs[i].title,
+                        "headline": result.docs[i].headline,
+                    }
+                    for i in range(pagenum, maxpages)
                 ]
+                # result = [await self.fetch_doc({"docid": v["docid"]}) for v in result]
+                return [TextContent(type="text", text=json.dumps(vl)) for vl in result]
             except httpx.HTTPStatusError as e:
                 logging.error(f"Http error while calling api :: {e}")
                 return None
@@ -116,7 +126,7 @@ class CustomToolCalls:
         url = self.url
         token = self.token
         docid = arguments["docid"]
-        formed_url = f"{url}/docid/{docid}/"
+        formed_url = f"{url}/doc/{docid}/"
         async with httpx.AsyncClient() as client:
             result = await client.post(
                 formed_url,
@@ -128,10 +138,18 @@ class CustomToolCalls:
             )
             try:
                 result.raise_for_status()
+                result = IkapiDocModel.model_validate(result.json())
                 return [
                     TextContent(
                         type="text",
-                        text=json.dumps(result.json()),
+                        text="\n\n".join(
+                            [
+                                f"""
+                                title: {result.title}
+                                doc: {result.doc}
+                                """
+                            ]
+                        ),
                     )
                 ]
             except httpx.HTTPStatusError as e:

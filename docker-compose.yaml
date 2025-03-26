@@ -27,7 +27,7 @@ services:
     networks:
       - paralegal-ai-bot-network
     ports:
-      - "8000:8000"
+      - "8000"
 
 networks:
   paralegal-ai-bot-network:
