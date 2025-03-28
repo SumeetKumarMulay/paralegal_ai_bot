@@ -22,6 +22,7 @@ pipenv - Package manager
 
 ## Folder structure
 
+```
 paralegal_ai_bot/
 ├── frontend/
 │ └── lib
@@ -42,6 +43,7 @@ paralegal_ai_bot/
 ├── .
 ├── .
 └── README.md
+```
 
 ## FOR PR's and issues
 
@@ -69,5 +71,5 @@ docker compose up
 
 ## important links
 
-[Open AI Docs](https://openrouter.ai/docs/quickstart)
-[India Kanoon](https://api.indiankanoon.org/documentation/)
+* [Open AI Docs](https://openrouter.ai/docs/quickstart)
+* [India Kanoon](https://api.indiankanoon.org/documentation/)
