@@ -1,16 +1,55 @@
 # paralegal_ai_bot
 
-## Introduction
-
 **NOTE** The project is under active development.
 
-This is a paralegal ai bot build on top of an LLM which specializes in Indian Law.
-The current working Idea is to use Retrieval-Augmented Generation to pull information as
-required. But eventually there will be a vector database with all the required information
-which can then will be updated on a regular basis with current case generation info the most current information.
+## Project Overview
+A specialized AI-powered paralegal assistant focused on Indian legal research, leveraging advanced language models and knowledge retrieval technologies to provide comprehensive legal insights.
 
-Currently there is an MCP service connects with India Kanoon API. Please check projects to
-look info progress.
+## Current Architecture
+### Core Components
+1. **Language Model Base**
+   - Built on top of an advanced Large Language Model (LLM)
+   - Specialized training in Indian legal terminology and jurisprudence
+
+2. **Retrieval-Augmented Generation (RAG) System**
+   - Dynamic information retrieval from multiple legal sources
+   - Real-time context-aware legal research capabilities
+
+3. **Data Integration**
+   - India Kanoon API integration using Model context protocol
+   - Brave search API
+
+### Knowledge Management
+1. **Vector Database**
+   - Comprehensive legal document repository
+   - Includes:
+     - Case laws
+     - Statutes
+     - Judicial precedents
+     - Legal commentaries
+   - Regularly updated with the latest legal information
+
+2. **Multilingual Support**
+   - English and major Indian regional languages
+   - Seamless translation of legal documents
+   - Preservation of legal nuances during translation
+
+### Proposed Technical Improvements
+1. **Machine Learning Models**
+   - Continuous learning from new case data
+   - Adaptive knowledge base expansion
+   - Periodic model retraining
+
+2. **Security and Compliance**
+   - End-to-end encryption
+   - Strict access controls
+   - Compliance with data protection regulations
+   - Anonymization of sensitive information
+
+3. **Performance Optimization**
+   - Efficient query processing
+   - Low-latency information retrieval
+   - Scalable cloud infrastructure
 
 ## Technologies used
 
