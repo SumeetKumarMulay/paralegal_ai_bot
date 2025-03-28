@@ -53,11 +53,11 @@ A specialized AI-powered paralegal assistant focused on Indian legal research, l
 
 ## Technologies used
 
-Docker composer - For deployment.
-FastApi - For backend.
-Crawl4AI - For web crawling and Markdown generation.
-Flutter - For frontend.
-pipenv - Package manager
+* Docker composer - For deployment.
+* FastApi - For backend.
+* Crawl4AI - For web crawling and Markdown generation.
+* Flutter - For frontend.
+* pipenv - Package manager
 
 ## Folder structure
 
