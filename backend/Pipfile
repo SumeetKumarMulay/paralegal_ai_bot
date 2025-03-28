@@ -10,6 +10,7 @@ mcp = "*"
 httpx = "*"
 openai = "*"
 dotenv = "*"
+crawl4ai = "*"
 
 [dev-packages]
 

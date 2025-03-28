@@ -24,9 +24,7 @@ app = FastAPI(
 @app.post("/")
 async def test(query: str):
     agents = AIAgents()
-    result = await agents.process_query(
-        query=query,
-    )
+    result = await agents.process_query(query)
     return result
 
 
