@@ -2,8 +2,8 @@ import json
 from mcp.types import Tool, TextContent
 from enum import Enum
 from config import Config
-from utilities.Ikapi_model import IKapiModel
-from utilities.Ikapi_docs_model import IkapiDocModel
+from backend.mcp_india_kanoon.utilities.models.Ikapi_model import IKapiModel
+
 import urllib.parse
 import httpx
 import logging
@@ -138,15 +138,17 @@ class CustomToolCalls:
             )
             try:
                 result.raise_for_status()
-                result = IkapiDocModel.model_validate(result.json())
+                
+                # result = IkapiDocModel.model_validate(result.json())
+
                 return [
                     TextContent(
                         type="text",
                         text="\n\n".join(
                             [
                                 f"""
-                                title: {result.title}
-                                doc: {result.doc}
+                                title: {result.json()["title"]}
+                                doc: {result.json()["doc"]}
                                 """
                             ]
                         ),
