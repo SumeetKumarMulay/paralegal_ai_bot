@@ -91,6 +91,30 @@ class AIAgents:
         ]
         self.final_message = []
 
+    async def create_summary(self, query: str) -> str:
+        completion = await self.open_ai.chat.completions.create(
+            model=self.model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": """
+                                You are a summary generating bot.
+                                you will take large complex texts if they are in multiple
+                                languages to convert them to engine and generate a 500 words
+                                summary.
+
+                                you only need to return the summary text nothing else is required.
+                                """,
+                },
+                {
+                    "role": "user",
+                    "content": query,
+                },
+            ],
+        )
+        data = completion.choices[0].message.content
+        return data
+
     async def _exc_tool(self, tool_name, tool_args):
         match tool_name:
             case "search_database":
@@ -123,11 +147,14 @@ class AIAgents:
                     result = "\n\n".join(
                         [
                             f"""
-                            Title+doc: {entry["text"]}
+                            {entry["text"]}
                             """
                             for entry in result
                         ]
                     )
+
+                    result = await self.create_summary(result)
+
                 except Exception as e:
                     logging.error(f"{AIAgents.__name__} fetch error :: {e}")
                     result = "Error processing request."
@@ -142,7 +169,6 @@ class AIAgents:
         self, content: ChatCompletionMessage, tool_list: ChatCompletionToolParam
     ):
         while content.tool_calls:
-            tool_responses = []
 
             for tool_call in content.tool_calls:
                 tool_name = tool_call.function.name
@@ -154,7 +180,7 @@ class AIAgents:
 
                 try:
                     result = await self._exc_tool(tool_name, tool_args)
-                    tool_responses.append(
+                    self.messages.append(
                         {
                             "role": "tool",
                             "tool_call_id": tool_call.id,
@@ -165,25 +191,25 @@ class AIAgents:
                 except Exception as e:
                     logging.error(f"{AIAgents.__name__} tool call error :: {e}")
 
-            self.messages.extend(tool_responses)
-            print(self.messages)
-
             response = await self.open_ai.chat.completions.create(
-                model=self.model, messages=self.messages, tools=tool_list
+                model=self.model,
+                messages=self.messages,
+                tools=tool_list,
             )
-            print(response)
             content = response.choices[0].message
             self.messages.append(content.model_dump())
 
         return content
 
     async def process_query(self, query: str) -> str:
+
         self.messages.append(
             {
                 "role": "user",
                 "content": query,
             },
         )
+
         tool_list = await self.mcp_service.list_tools()
         tool_list = [mcp_tool_formatter(t) for t in tool_list]
 
@@ -202,16 +228,3 @@ class AIAgents:
 
         self.final_message.append(content.content if content.content else "")
         return self.final_message
-
-    async def query(self, query: str):
-        completion = await self.open_ai.chat.completions.create(
-            model=self.model,
-            messages=[
-                {
-                    "role": "user",
-                    "content": query,
-                }
-            ],
-        )
-        data = await completion.choices[0].message.content
-        return data
