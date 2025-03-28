@@ -1,4 +1,4 @@
-# paralegal_ai_bot
+# Paralegal AI
 
 **NOTE** The project is under active development.
 
