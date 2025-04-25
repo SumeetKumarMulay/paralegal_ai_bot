@@ -2,8 +2,8 @@ import json
 from mcp.types import Tool, TextContent
 from enum import Enum
 from config import Config
-from backend.mcp_india_kanoon.utilities.models.Ikapi_model import IKapiModel
-
+from utilities.models.Ikapi_model import IKapiModel
+from services.scrapping_service.scrapping_service import scrap_raw_html
 import urllib.parse
 import httpx
 import logging
@@ -128,7 +128,7 @@ class CustomToolCalls:
         docid = arguments["docid"]
         formed_url = f"{url}/doc/{docid}/"
         async with httpx.AsyncClient() as client:
-            result = await client.post(
+            response = await client.post(
                 formed_url,
                 headers={
                     "Authorization": f"Token {token}",
@@ -137,18 +137,16 @@ class CustomToolCalls:
                 timeout=3000,
             )
             try:
-                result.raise_for_status()
-                
+                response.raise_for_status()
+                result = await scrap_raw_html(response.json()["doc"])
                 # result = IkapiDocModel.model_validate(result.json())
-
                 return [
                     TextContent(
                         type="text",
                         text="\n\n".join(
                             [
                                 f"""
-                                title: {result.json()["title"]}
-                                doc: {result.json()["doc"]}
+                                doc: {result}
                                 """
                             ]
                         ),
