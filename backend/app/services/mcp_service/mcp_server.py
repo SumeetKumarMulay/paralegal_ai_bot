@@ -44,6 +44,7 @@ class MCPIndiaKanoonService:
                 data=json.dumps(arguments),
                 timeout=3000,
             )
+
             try:
                 result.raise_for_status()
                 result = [

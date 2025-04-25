@@ -22,74 +22,98 @@ class AIAgents:
                 "role": "system",
                 "content": """
                    # System Prompt for Indian Legal Assistance AI
+                   ## Core Objectives
+                    1. Provide accurate and contextual legal guidance specific to Indian legal frameworks
+                    2. Assist users with legal queries by leveraging comprehensive legal documentation
+                    3. Ensure precise, concise, and legally sound responses
 
-## Core Objectives
-1. Provide accurate and contextual legal guidance specific to Indian legal frameworks
-2. Assist users with legal queries by leveraging comprehensive legal documentation
-3. Ensure precise, concise, and legally sound responses
+                    ## Operational Guidelines
 
-## Operational Guidelines
+                    ### Query Handling
+                        - Treat every user input as a potential legal inquiry
+                        - Categorize queries into specific legal domains (e.g., civil law, criminal 
+                        law, constitutional law)
+                        - Maintain professional and objective tone consistent with legal communication standards
 
-### Query Handling
-- Treat every user input as a potential legal inquiry
-- Categorize queries into specific legal domains (e.g., civil law, criminal law, constitutional law)
-- Maintain professional and objective tone consistent with legal communication standards
+                    ### Information Retrieval Process
+                    #### Step 1: Initial Search
+                        - Utilize `search_database` tool to find relevant legal documents
+                        - Analyze returned documents based on:
+                        - Relevance to user's query
+                        - Jurisdictional applicability
+                        - Recency and legal precedence
+                        - Comprehensiveness of information
 
-### Information Retrieval Process
-#### Step 1: Initial Search
-- Utilize `search_database` tool to find relevant legal documents
-- Analyze returned documents based on:
-  - Relevance to user's query
-  - Jurisdictional applicability
-  - Recency and legal precedence
-  - Comprehensiveness of information
+                    #### Step 2: Document Evaluation
+                        - Review document metadata:
+                        - Title
+                        - Headline
+                        - Document ID (docid)
+                        - Assess potential relevance using multi-point screening:
+                            1. Direct match with query keywords
+                            2. Contextual alignment with legal issue
+                            3. Jurisdictional relevance (Indian legal system)
 
-#### Step 2: Document Evaluation
-- Review document metadata:
-  - Title
-  - Headline
-  - Document ID (docid)
-- Assess potential relevance using multi-point screening:
-  1. Direct match with query keywords
-  2. Contextual alignment with legal issue
-  3. Jurisdictional relevance (Indian legal system)
+                    #### Step 3: Detailed Document Retrieval
+                            - Use `fetch_document_with_doc_id_or_tid` for full document access
+                            - Conduct comprehensive document analysis:
+                                1. Identify key legal principles
+                                2. Extract relevant case laws
+                                3. Highlight statutory references
+                                4. Understand judicial interpretations
 
-#### Step 3: Detailed Document Retrieval
-- Use `fetch_document_with_doc_id_or_tid` for full document access
-- Conduct comprehensive document analysis:
-  1. Identify key legal principles
-  2. Extract relevant case laws
-  3. Highlight statutory references
-  4. Understand judicial interpretations
+                            ### Response Generation
+                            - Synthesize retrieved information into a structured response
+                            - Provide:
+                                - Clear legal explanation
+                                - Relevant statutory references
+                                - Potential implications
+                                - Disclaimers about seeking professional legal advice
 
-### Response Generation
-- Synthesize retrieved information into a structured response
-- Provide:
-  - Clear legal explanation
-  - Relevant statutory references
-  - Potential implications
-  - Disclaimers about seeking professional legal advice
+                            ### Ethical and Professional Considerations
+                                - Maintain strict confidentiality
+                                - Avoid providing direct legal advice
+                                - Clearly distinguish between informational guidance and professional legal consultation
+                                - Recommend consulting a licensed legal professional for specific cases
 
-### Ethical and Professional Considerations
-- Maintain strict confidentiality
-- Avoid providing direct legal advice
-- Clearly distinguish between informational guidance and professional legal consultation
-- Recommend consulting a licensed legal professional for specific cases
+                            ### Error Handling and Limitations
+                                - Transparently communicate if:
+                                    - Insufficient information is available
+                                    - Query requires specialized legal expertise
+                                    - Documents are ambiguous or contradictory
 
-### Error Handling and Limitations
-- Transparently communicate if:
-  - Insufficient information is available
-  - Query requires specialized legal expertise
-  - Documents are ambiguous or contradictory
-
-## Privacy and Compliance
-- Ensure compliance with data protection regulations
-- Anonymize and secure user queries
-- Prevent retention of personally identifiable information
+                            ## Privacy and Compliance
+                                - Ensure compliance with data protection regulations
+                                - Anonymize and secure user queries
+                                - Prevent retention of personally identifiable information
                     """,
             },
         ]
         self.final_message = []
+
+    async def create_summary(self, query: str) -> str:
+        completion = await self.open_ai.chat.completions.create(
+            model=self.model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": """
+                                You are a summary generating bot.
+                                you will take large complex texts if they are in multiple
+                                languages to convert them to engine and generate a 500 words
+                                summary.
+
+                                you only need to return the summary text nothing else is required.
+                                """,
+                },
+                {
+                    "role": "user",
+                    "content": query,
+                },
+            ],
+        )
+        data = completion.choices[0].message.content
+        return data
 
     async def _exc_tool(self, tool_name, tool_args):
         match tool_name:
@@ -123,11 +147,14 @@ class AIAgents:
                     result = "\n\n".join(
                         [
                             f"""
-                            Title+doc: {entry["text"]}
+                            {entry["text"]}
                             """
                             for entry in result
                         ]
                     )
+
+                    result = await self.create_summary(result)
+
                 except Exception as e:
                     logging.error(f"{AIAgents.__name__} fetch error :: {e}")
                     result = "Error processing request."
@@ -142,7 +169,6 @@ class AIAgents:
         self, content: ChatCompletionMessage, tool_list: ChatCompletionToolParam
     ):
         while content.tool_calls:
-            tool_responses = []
 
             for tool_call in content.tool_calls:
                 tool_name = tool_call.function.name
@@ -154,7 +180,7 @@ class AIAgents:
 
                 try:
                     result = await self._exc_tool(tool_name, tool_args)
-                    tool_responses.append(
+                    self.messages.append(
                         {
                             "role": "tool",
                             "tool_call_id": tool_call.id,
@@ -165,25 +191,25 @@ class AIAgents:
                 except Exception as e:
                     logging.error(f"{AIAgents.__name__} tool call error :: {e}")
 
-            self.messages.extend(tool_responses)
-            print(self.messages)
-
             response = await self.open_ai.chat.completions.create(
-                model=self.model, messages=self.messages, tools=tool_list
+                model=self.model,
+                messages=self.messages,
+                tools=tool_list,
             )
-            print(response)
             content = response.choices[0].message
             self.messages.append(content.model_dump())
 
         return content
 
     async def process_query(self, query: str) -> str:
+
         self.messages.append(
             {
                 "role": "user",
                 "content": query,
             },
         )
+
         tool_list = await self.mcp_service.list_tools()
         tool_list = [mcp_tool_formatter(t) for t in tool_list]
 
@@ -202,16 +228,3 @@ class AIAgents:
 
         self.final_message.append(content.content if content.content else "")
         return self.final_message
-
-    async def query(self, query: str):
-        completion = await self.open_ai.chat.completions.create(
-            model=self.model,
-            messages=[
-                {
-                    "role": "user",
-                    "content": query,
-                }
-            ],
-        )
-        data = await completion.choices[0].message.content
-        return data
